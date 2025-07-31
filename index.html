@@ -351,6 +351,34 @@
                     🔄 Reset All
                 </button>
             </div>
+            
+            <!-- NeetCode Profile Section -->
+            <div style="margin-top: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; backdrop-filter: blur(10px);">
+                <h3 style="color: white; margin-bottom: 15px; font-size: 1.2rem;">🔗 Quick Access Links</h3>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://neetcode.io/" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        🎯 NeetCode Practice
+                    </a>
+                    <a href="https://leetcode.com/" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        💻 LeetCode
+                    </a>
+                    <a href="https://github.com/" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        📚 GitHub
+                    </a>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <input type="text" id="neetcodeProfile" placeholder="Enter your NeetCode profile URL" 
+                           style="width: 300px; padding: 10px; border: none; border-radius: 8px; margin-right: 10px; font-size: 0.9rem;">
+                    <button class="btn btn-primary" onclick="saveNeetCodeProfile()" style="font-size: 0.9rem;">
+                        💾 Save Profile
+                    </button>
+                </div>
+                <div id="profileDisplay" style="margin-top: 10px; text-align: center; display: none;">
+                    <a id="profileLink" href="#" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                        📊 View Your NeetCode Profile
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="progress-overview">
@@ -985,7 +1013,8 @@
                 notes: notesData,
                 lastUpdated: new Date().toISOString(),
                 currentMonth: currentMonth,
-                totalSessions: (window.progressData?.totalSessions || 0) + 1
+                totalSessions: (window.progressData?.totalSessions || 0) + 1,
+                neetcodeProfile: localStorage.getItem('neetcodeProfile') || ''
             };
             
             // Store in memory with backup methods
@@ -1044,6 +1073,12 @@
                 // Restore current month
                 if (progressData.currentMonth) {
                     switchTab(progressData.currentMonth);
+                }
+                
+                // Restore NeetCode profile
+                if (progressData.neetcodeProfile) {
+                    localStorage.setItem('neetcodeProfile', progressData.neetcodeProfile);
+                    loadNeetCodeProfile();
                 }
                 
                 updateStats();
@@ -1203,6 +1238,68 @@
             opacity: 0.7;
         `;
         document.body.appendChild(shortcutInfo);
+
+        // NeetCode Profile Functions
+        function saveNeetCodeProfile() {
+            const profileUrl = document.getElementById('neetcodeProfile').value.trim();
+            
+            if (!profileUrl) {
+                showNotification('Please enter a valid NeetCode profile URL', 'error');
+                return;
+            }
+            
+            // Validate URL format
+            if (!profileUrl.includes('neetcode.io') && !profileUrl.includes('leetcode.com')) {
+                showNotification('Please enter a valid NeetCode or LeetCode profile URL', 'error');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('neetcodeProfile', profileUrl);
+            
+            // Update display
+            document.getElementById('profileLink').href = profileUrl;
+            document.getElementById('profileDisplay').style.display = 'block';
+            document.getElementById('neetcodeProfile').value = '';
+            
+            showNotification('Profile URL saved successfully!', 'success');
+        }
+
+        function loadNeetCodeProfile() {
+            const savedProfile = localStorage.getItem('neetcodeProfile');
+            if (savedProfile) {
+                document.getElementById('neetcodeProfile').value = savedProfile;
+                document.getElementById('profileLink').href = savedProfile;
+                document.getElementById('profileDisplay').style.display = 'block';
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? 'linear-gradient(135deg, #e53e3e, #c53030)' : 'linear-gradient(135deg, #38a169, #4fd1c7)'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: 600;
+                z-index: 1001;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Load NeetCode profile on page load
+        loadNeetCodeProfile();
     </script>
 </body>
 </html>
